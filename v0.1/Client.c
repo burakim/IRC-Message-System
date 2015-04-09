@@ -4,7 +4,7 @@
 		Halim Burak Yesilyurt
 		Emrah Akgul
 		Umut Pilge
-		This document's rights is protected by MIT licence.
+		This document's rights are protected by MIT licence.
 */
 
 #include <stdio.h>
@@ -34,9 +34,16 @@ struct in_addr{
 };
 */
 
+struct compacket
+{
+	int senderfd;
+	char message[1024];
+	int isConsumed;
+};
 int main(int argc, char **argv){
 	if(argc<=2){printf("Please give IP address and port number of server to connect\n");exit(1);}	
 	char send_buf[BUFSIZE];
+	char buf[BUFSIZE];
 	int sockfd, fdmax, i;
 
 	struct sockaddr_in server_addr;
@@ -53,11 +60,13 @@ int main(int argc, char **argv){
 	server_addr.sin_port=htons(atoi(argv[2]));//host to network short changes is done
 	server_addr.sin_addr.s_addr=inet_addr(argv[1]);//address is put to sin_addr in server
 	memset(server_addr.sin_zero,'\0',sizeof server_addr.sin_zero);//sin_zero is fulled by 0
-
+	printf("%s\n","Client sends connection request to server..." );
 	if(connect(sockfd,(struct sockaddr *)&server_addr,sizeof(struct sockaddr))==-1) {//connect request is send to server
 		printf("Connection cannot be done!!!\n");
 		exit(1);
 	}
+	else
+		printf("%s\n","Connection established" );
 
 	FD_ZERO(&master);
     FD_ZERO(&read_fds);
@@ -73,16 +82,39 @@ int main(int argc, char **argv){
 			exit(4);
 		}
 		for(i=0;i<=fdmax;i++)
-			if(FD_ISSET(i,&read_fds)){		
+			if(FD_ISSET(i,&read_fds)){
 				if(i==0){//ready for write
-					fgets(send_buf,BUFSIZE,stdin);
+										
+
+					int return1 =fgets(send_buf,BUFSIZE,stdin);
+
+
+					
                    
 					if(strcmp(send_buf,"quit\n")==0){
 						exit(0);
 					}else if(send(sockfd,send_buf,strlen(send_buf),0))//data is sent to server
 						 printf(">message is sended\n");
+
+						
+					
+						
 				}
+				int nbytes=0;
+				struct compacket packet;
+				 if((nbytes=recv(i,&packet,sizeof(packet),0))>0){//from i. connection,socket				
+                    packet.message[nbytes]='\0';
+                        printf(" %d%s%s\n",packet.senderfd," says: ",packet.message);
+				    		// printf("Socket closed...\n");
+					   		// close(i);//connection,socket closed						    		
+					   		// FD_CLR(i,&master);//it is removed from master set
+                    
+					}
+					
+				
         }
+
+         
 			
 	}
 	printf("client-quited\n");
