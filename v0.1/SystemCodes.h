@@ -1,0 +1,1 @@
+#define LOGIN_REQUEST -58

@@ -10,23 +10,38 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <time.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <stdbool.h>  
+#include "SystemCodes.h"
 
 struct compacket
 {
 	int senderfd;
 	char message[1024];
 	int isConsumed;
+	int SystemCode;
 };
+void setfdAuthStatus(int index, int status);
+char* getTimeStamp();
+int isValidUser(char* uname_pass);
+ 
+// Remember 0 represents no auth
+//			1 represents there is auth
 
+
+int* authStatus;
+int authSize;
 int main(int argc, char **argv){
 	if(argc<=1){
 		printf("Please give port number to listen\n");exit(1);
 	}   
+	authSize = 8;
+	authStatus = (int*)malloc(sizeof(int)*authSize);
+
 
 	fd_set master; //master file descriptor list	   
 	fd_set read_fds; //copy of master file descriptor list which is temp
@@ -106,6 +121,7 @@ packet.isConsumed = -1;
 					addrlen=sizeof(clientaddr);
                     
                     newfd=accept(listener,(struct sockaddr *)&clientaddr,&addrlen);//accept connect request of client and return new socket for this connection
+                    setfdAuthStatus(newfd,0);
                     if(newfd>0)
                     printf("%s\n","Server accepts connection request of Client..." );
                     FD_SET(newfd,&master); // add new socket to master set
@@ -119,6 +135,19 @@ packet.isConsumed = -1;
                     
                     if(newfd>fdmax)
                         fdmax=newfd;//it is biggest socket number
+
+                    struct packet;
+
+                    packet.SystemCode = LOGIN_REQUEST; // means you shall not pass, you shall login first :)
+					
+	printf("%s\n","dsad3" );
+
+                    if(authStatus[newfd] ==0)
+                    {
+                    	printf("%s","Auth requested");
+                    	if(send(newfd,&packet,sizeof(packet),0))//data is sent to server
+						 printf(">Login Request sended\n"); //if it is not listener, there is data from client
+                    }
                    
 				}else{
 				
@@ -132,6 +161,8 @@ packet.isConsumed = -1;
 					
                     
 					}else{	//if data is received from a client
+if(authStatus[i] == 1)
+						{
 						packet.message[nbytes]='\0';
 						int j;
 						for(j=0;j<nbytes;j++)
@@ -157,6 +188,20 @@ packet.isConsumed = -1;
 			}
                        
 				    }
+				    else
+				{
+						if(isValidUser(buf)>0)
+						{
+							authStatus[i] = 1;
+							printf("%s%s\n","user auth ok at time => ",getTimeStamp() );
+						}
+						else
+						{
+							printf("%s\n", "Wrong username and password entered");
+						}
+				}
+				}
+				
 				}
 			
 		    }
@@ -187,7 +232,56 @@ packet.isConsumed = -1;
 	return 0;
 }
 
- // int k;
- //                        for(k=0;k<fdmax;k++)
-	// 				if(send(k,buf,strlen(buf),0))//data is sent to server
-	// 					 printf(">message is sended\n"); //if it is not listener, there is data from client
+void setfdAuthStatus(int index, int status)
+{
+	if(authSize==index || authSize<index)
+	{
+		int * tempLoc = (int*)malloc(sizeof(int)*(2*index));
+		int j;
+		for(j=0; j<authSize; j++)
+		{
+			tempLoc[j]=authStatus[j];
+		}
+		tempLoc[j] = status;
+		free(authStatus);
+		authStatus = tempLoc;
+		return;
+	}
+	else
+	{
+
+		authStatus[index] = status;
+		return;
+	}
+
+}
+int isValidUser(char* uname_pass)
+{
+	char *fname="users.txt";   // dosya adi
+	FILE *fp;
+	char temp[512];
+	
+	if((fp = fopen(fname, "r")) == NULL) {
+		return(-1);
+	}
+	while(fgets(temp, 512, fp) != NULL) {
+		if((strstr(temp, uname_pass)) != NULL) {
+			return 1;
+			
+			
+		}
+	}
+
+	
+	
+	if(fp) {
+		fclose(fp);
+	}
+	return -1;
+
+}
+char* getTimeStamp()
+{
+	time_t clk = time(NULL);
+return ctime(&clk);
+}

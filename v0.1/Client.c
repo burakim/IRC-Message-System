@@ -18,6 +18,7 @@
 #include <errno.h>
 #include <time.h>
 #include <string.h>	
+#include "SystemCodes.h"
 
 #define BUFSIZE 1024
 
@@ -39,6 +40,8 @@ struct compacket
 	int senderfd;
 	char message[1024];
 	int isConsumed;
+	int SystemCode;
+
 };
 int main(int argc, char **argv){
 	if(argc<=2){printf("Please give IP address and port number of server to connect\n");exit(1);}	
@@ -102,8 +105,40 @@ int main(int argc, char **argv){
 				}
 				int nbytes=0;
 				struct compacket packet;
-				 if((nbytes=recv(i,&packet,sizeof(packet),0))>0){//from i. connection,socket				
+				 if((nbytes=recv(i,&packet,sizeof(packet),0))>0){//from i. connection,socket	
+
                     packet.message[nbytes]='\0';
+                    if(packet.SystemCode<0)
+                    {
+                    	switch (packet.SystemCode)
+                    	{
+                    		case LOGIN_REQUEST:
+                    		{
+                    			char username[256];
+                    			username[0] = '\0';
+                    			char password[256];
+                    			password[0] = '\0';
+
+                    			printf("%s\n","Enter username password");
+                    			scanf("%s%s",&username,&password);
+                    			printf("%s%s\n",username ," pass" );
+                    			char gathered[512];
+                    			gathered[0] = '\0';
+                    			strcat(gathered,username);
+                    			strcat(gathered," ");
+                    			strcat(gathered,password);
+                    			//gathered[512] = '\0';
+                    				printf("%s\n",gathered );
+                    			if(send(sockfd,gathered,strlen(gathered),0))//data is sent to server
+									 printf(">user creditendals sended\n");
+									break;
+                    		}
+                    		default:
+                    		{
+
+                    		}
+                    	}
+                    }
                         printf(" %d%s%s\n",packet.senderfd," says: ",packet.message);
 				    		// printf("Socket closed...\n");
 					   		// close(i);//connection,socket closed						    		
