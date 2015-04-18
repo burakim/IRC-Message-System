@@ -87,16 +87,19 @@ int main(int argc, char **argv){
 		for(i=0;i<=fdmax;i++)
 			if(FD_ISSET(i,&read_fds)){
 				if(i==0){//ready for write
-										
+							struct compacket compac;			
 
-					int return1 =fgets(send_buf,BUFSIZE,stdin);
+					int return1 =fgets(compac.message,BUFSIZE,stdin);
 
 
 					
                    
 					if(strcmp(send_buf,"quit\n")==0){
 						exit(0);
-					}else if(send(sockfd,send_buf,strlen(send_buf),0))//data is sent to server
+						
+						compac.SystemCode = NORMAL_MESSAGE;
+
+					}else if(send(sockfd,&compac,sizeof(compac),0))//data is sent to server
 						 printf(">message is sended\n");
 
 						
@@ -108,12 +111,13 @@ int main(int argc, char **argv){
 				 if((nbytes=recv(i,&packet,sizeof(packet),0))>0){//from i. connection,socket	
 
                     packet.message[nbytes]='\0';
-                    if(packet.SystemCode<0)
-                    {
+                    printf("%s%d\n","Received packet error code = ",packet.SystemCode);
+                    
                     	switch (packet.SystemCode)
                     	{
                     		case LOGIN_REQUEST:
                     		{
+                    			struct compacket compac;
                     			char username[256];
                     			username[0] = '\0';
                     			char password[256];
@@ -122,24 +126,57 @@ int main(int argc, char **argv){
                     			printf("%s\n","Enter username password");
                     			scanf("%s%s",&username,&password);
                     			printf("%s%s\n",username ," pass" );
-                    			char gathered[512];
-                    			gathered[0] = '\0';
-                    			strcat(gathered,username);
-                    			strcat(gathered," ");
-                    			strcat(gathered,password);
+                    			
+                    			compac.message[0] = '\0';
+                    			strcat(compac.message,username);
+                    			strcat(compac.message," ");
+                    			strcat(compac.message,password);
                     			//gathered[512] = '\0';
-                    				printf("%s\n",gathered );
-                    			if(send(sockfd,gathered,strlen(gathered),0))//data is sent to server
+                    				
+                    			
+                    			compac.SystemCode = NORMAL_MESSAGE;
+
+                    			if(send(sockfd,&compac,sizeof(compac),0))//data is sent to server
 									 printf(">user creditendals sended\n");
 									break;
+                    		}
+                    		case WRONG_CREDENTIAL:
+                    		{
+                    			printf("%s\n", "Wrong username and password entered");
+                    		break;
+                    		}
+                    		case NORMAL_MESSAGE:
+                    		{
+                    			printf("%d\n", packet.SystemCode);
+                    			  printf(" %d%s%s\n",packet.senderfd," says: ",packet.message);
+
+                    			break;
+                    		}
+                    		case SESION_LIST_SEND:
+                    		{
+                    			printf("%s\n","Authetication succesfull. Please join one of sessions that listed under this line by entering session number" );
+                    			int j;
+                    			int maxSession = atoi(packet.message);
+                    			printf("%s\n","Session List:" );
+                    			for(j=0;j<maxSession;j++)
+                    			{
+                    				printf("%s%d%s\n", " - ",(j+1)," th session");
+                    			}
+                    			struct compacket compac;
+                    			scanf("%s",compac.message);
+                    			compac.SystemCode =SESSION_JOIN_REQUEST;
+
+                    			if(send(sockfd,&compac,sizeof(compac),0))//data is sent to server
+									 printf(">user creditendals sended\n");
+
+                    			break;
                     		}
                     		default:
                     		{
 
                     		}
                     	}
-                    }
-                        printf(" %d%s%s\n",packet.senderfd," says: ",packet.message);
+                    
 				    		// printf("Socket closed...\n");
 					   		// close(i);//connection,socket closed						    		
 					   		// FD_CLR(i,&master);//it is removed from master set
