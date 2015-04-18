@@ -92,12 +92,12 @@ int main(int argc, char **argv){
 					int return1 =fgets(compac.message,BUFSIZE,stdin);
 
 
-					
+					compac.SystemCode = NORMAL_MESSAGE;
                    
 					if(strcmp(send_buf,"quit\n")==0){
 						exit(0);
 						
-						compac.SystemCode = NORMAL_MESSAGE;
+						
 
 					}else if(send(sockfd,&compac,sizeof(compac),0))//data is sent to server
 						 printf(">message is sended\n");
@@ -149,6 +149,7 @@ int main(int argc, char **argv){
                     		{
                     			printf("%d\n", packet.SystemCode);
                     			  printf(" %d%s%s\n",packet.senderfd," says: ",packet.message);
+                    			  
 
                     			break;
                     		}

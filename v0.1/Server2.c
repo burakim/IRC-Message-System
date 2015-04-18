@@ -31,6 +31,7 @@ char* getTimeStamp();
 int isValidUser(char* uname_pass);
  bool initalizeSessions();
  bool addSession(fd_set fdSet);
+ bool handleNormalMessage(int i,struct compacket compacMost);
 // Remember 0 represents no auth
 //			1 represents there is auth
 
@@ -179,49 +180,23 @@ int isOnlyOnce = 0;
 					
                     
 					}else{	//if data is received from a client
-
+printf("%s\n","NORMAL_MESSAGE-2" );
 if(authStatus[i] == 1)
-						{	compacMost.message[sizeof(compacMost.message)/sizeof(char)-1]='\0';
+						{	
+														// printf("%s",compacMost.message);
+printf("%s\n","NORMAL_MESSAGE-1" );
+							compacMost.message[sizeof(compacMost.message)/sizeof(char)-1]='\0';
 							// printf("%s",compacMost.message);
-
+printf("%d\n",compacMost.SystemCode );
 							switch(compacMost.SystemCode)
 							{
-		// 						case NORMAL_MESSAGE:
-		// 						{
-		// 							printf("Socket closed2\n");
-		// 							packet.message[nbytes]='\0';
-		// 				int j;
-		// 				for(j=0;j<sizeof(compacMost.message)/sizeof(char)-1;j++)
-		// 				{
-		// 					packet.message[j] = compacMost.message[j];
-		// 				}
-						
-		// 				packet.senderfd = i;
-		// 				packet.isConsumed = 0;
-  //                       printf("%d says: %s \n",i,compacMost.message);
-  //                       for(j=0;j<=fdmax;j++)
-  //                       {
-  //                      	if(authStatus[j] ==1)
-  //                      	{
-  //                       if(packet.isConsumed != -1)
-  //                       {
-  //                       	packet.SystemCode = NORMAL_MESSAGE;
-		// 			if(send(j,&packet,sizeof(packet),0))//data is sent to server
-		// 				 printf(">message is sended\n"); //if it is not listener, there is data from client
-		// 				packet.isConsumed++;
-		// 			}
-					
-
-				
-		// 	}
-		// 	else {
-		// 		printf("Socket closed3\n");
-		// 	continue;
-  //             }  
-		// }
+								case NORMAL_MESSAGE:
+								{
+									printf("%s\n","NORMAL_MESSAGE2" );
+									handleNormalMessage(i,compacMost);
 		       
-		// 							break;
-		// 						}
+									break;
+								}
 
 								case SESSION_JOIN_REQUEST:
 								{
@@ -232,7 +207,7 @@ if(authStatus[i] == 1)
 									if(convertedValue<= sessionsCurrentIndex){
 printf("%d%s%d\n",convertedValue, " sessiona eklendi ve eklenen deger = ",i );
 										FD_SET(i,&sessions[convertedValue]);
-										FD_CLR(i,&master);//it is removed from master set
+									//	FD_CLR(i,&master);//it is removed from master set
 									}
 									
 									break;
@@ -279,100 +254,100 @@ printf("%d%s%d\n",convertedValue, " sessiona eklendi ve eklenen deger = ",i );
 				}
 			
 		    }
-		    else
-		    {
+		    
 		    	
-		    		int k;
-		    		for(k=0; k< sessionsCurrentIndex;k++)
-		    		{
-		    			 printf("%s%d%s%d\n","i val = ",i,"session k val = ",k);
-		    			if(FD_ISSET(i,&sessions[k]))
-		    			{
-		    				printf("%s\n","Session bulundu" );
-		    				// printf("Socket 2132\n");
-		    				struct compacket compacMost;
-		    				if(authStatus[i] == 1)
-						{	
-							printf("%s\n","Auth olan userdan geldi" );
-							int nbytes =-1;
-							struct  compacket compacMost;
-						memset(&(compacMost.message[0]),0,sizeof(compacMost.message));
+		//     		int k;
+		//     		for(k=0; k< sessionsCurrentIndex;k++)
+		//     		{
+		//     			struct  compacket compacMost2;
+		//     			 printf("%s%d%s%d\n","i val = ",i,"session k val = ",k);
+		//     			if(FD_ISSET(i,&sessions[k]))
+		//     			{
+		//     				printf("%s\n","Session bulundu" );
+		//     				// printf("Socket 2132\n");
+		    				
+		//     				if(authStatus[i] == 1)
+		// 				{	
+		// 					printf("%s\n","Auth olan userdan geldi" );
+		// 					int nbytes =-1;
+							
+		// 				memset(&(compacMost2.message[0]),0,sizeof(compacMost2.message));
 						
-					if((nbytes=recv(i,&compacMost,sizeof(compacMost),0))<=0){//from i. connection,socket				
+		// 			if((nbytes=recv(i,&compacMost2,sizeof(compacMost2),0))<=0){//from i. connection,socket				
                     
-				    		printf("Socket closed...\n");
-					   		close(i);//connection,socket closed						    		
-					   		FD_CLR(i,&master);//it is removed from master set
+		// 		    		printf("Socket closed...\n");
+		// 			   		close(i);//connection,socket closed						    		
+		// 			   		FD_CLR(i,&master);//it is removed from master set
 						
                    
 					
                     
-					}else{
+		// 			}else{
+		// 				struct compacket packet2;
+		// 				printf("%s\n","Veri geldi" );
+		// 					//compacMost.message[sizeof(compacMost.message)/sizeof(char)-1]='\0';
+		// 					printf("%d%s\n",compacMost2.SystemCode ,compacMost2.message);
+		// 					//printf("%s",compacMost.message);
 
-						printf("%s\n","Veri geldi" );
-							//compacMost.message[sizeof(compacMost.message)/sizeof(char)-1]='\0';
-							printf("%d\n",compacMost.SystemCode );
-							//printf("%s",compacMost.message);
-
-							switch(compacMost.SystemCode)
-							{
-								case NORMAL_MESSAGE:
-								{
-									printf("Socket dasdasd\n");
-									packet.message[nbytes]='\0';
-						int j;
-						for(j=0;j<sizeof(compacMost.message)/sizeof(char)-1;j++)
-						{
-							packet.message[j] = compacMost.message[j];
-						}
+		// 					switch(compacMost2.SystemCode)
+		// 					{
+		// 						case NORMAL_MESSAGE:
+		// 						{
+		// 							printf("Socket dasdasd\n");
+		// 							packet2.message[nbytes]='\0';
+		// 				int j;
+		// 				for(j=0;j<sizeof(compacMost2.message)/sizeof(char)-1;j++)
+		// 				{
+		// 					packet2.message[j] = compacMost2.message[j];
+		// 				}
 						
-						packet.senderfd = i;
-						packet.isConsumed = 0;
-                        printf("%d says: %s \n",i,compacMost.message);
-                        for(j=0;j<=fdmax;j++)
-                        {
-                       	if(authStatus[j] ==1)
-                       	{
-                        if(packet.isConsumed != -1)
-                        {
-                        	if(FD_ISSET(j,&sessions[k]))
-		    			{
-                        	packet.SystemCode = NORMAL_MESSAGE;
-					if(send(j,&packet,sizeof(packet),0))//data is sent to server
-						 printf(">message is sended\n"); //if it is not listener, there is data from client
-						packet.isConsumed++;
-					}
-				}
+		// 				packet2.senderfd = i;
+		// 				packet2.isConsumed = 0;
+  //                       printf("%d says: %s \n",i,compacMost2.message);
+  //                       for(j=0;j<=fdmax;j++)
+  //                       {
+  //                      	if(authStatus[j] ==1)
+  //                      	{
+  //                       if(packet2.isConsumed != -1)
+  //                       {
+  //                       	if(FD_ISSET(j,&sessions[k]))
+		//     			{
+  //                       	packet2.SystemCode = NORMAL_MESSAGE;
+		// 			if(send(j,&packet2,sizeof(packet2),0))//data is sent to server
+		// 				 printf(">message is sended\n"); //if it is not listener, there is data from client
+		// 				packet2.isConsumed++;
+		// 			}
+		// 		}
 					
 
 				
-			}
-		    			}
-		    		}
-				}
-				}	
-		    }
-		    else
-		    {
-		    	printf("%s\n","Veri geliyor ama auth yok" );
-		    }
-		    // printf("%s\n","Gonder0" );
-		}
+		// 	}
+		//     			}
+		//     		}
+		// 		}
+		// 		}	
+		//     }
+		//     else
+		//     {
+		//     	printf("%s\n","Veri geliyor ama auth yok" );
+		//     }
+		//     // printf("%s\n","Gonder0" );
+		// }
 
-       //  for(j=0;j<=fdmax;j++)
-       //  {
-       //  	// printf("%s\n","Gonder1" );
-       //  	if(FD_ISSET(j,&read_fds))
-       //  	{
-       //  		// printf("%s\n","Gonder2" );
-       //  		if(j!=listener&& j!= i)
-       //  		{
-       //  			// printf("%s\n",buf );
+  //      //  for(j=0;j<=fdmax;j++)
+  //      //  {
+  //      //  	// printf("%s\n","Gonder1" );
+  //      //  	if(FD_ISSET(j,&read_fds))
+  //      //  	{
+  //      //  		// printf("%s\n","Gonder2" );
+  //      //  		if(j!=listener&& j!= i)
+  //      //  		{
+  //      //  			// printf("%s\n",buf );
 						
-       //  			if(send(i,buf,strlen(buf),0))//data is sent to server
-						 // // printf(">message is sended\n");
-        		}
-        	}
+  //      //  			if(send(i,buf,strlen(buf),0))//data is sent to server
+		// 				 // // printf(">message is sended\n");
+  //       		}
+        	
         }
     }
 	free(sessions);
@@ -467,4 +442,31 @@ bool addSession(fd_set fdSet)
 		free(tempPointer);
 	}
 	return true;
+}
+
+bool handleNormalMessage(int i,struct compacket compacMost)
+{
+	printf("%d%s\n",i, " adli kullanici paket gonderdi dagitalim onu" );
+	int j;
+	int whichsession;
+	for(j=0;j<=sessionsCurrentIndex;j++)
+	{
+		if(FD_ISSET(i,&sessions[j]))
+		{
+			whichsession = j;
+		}
+
+	}
+	
+	compacMost.senderfd = i;
+	for(j=0;j<=sessionsCurrentIndex;j++)
+	{
+		if(FD_ISSET(j,&sessions[whichsession]))
+		{
+			if(send(j,&compacMost,sizeof(compacMost),0))//data is sent to server
+			{
+				printf("%s%s%d%s%d\n", compacMost.message, " -> ",j, " | session id = ",whichsession );
+			}
+		}
+	}
 }
