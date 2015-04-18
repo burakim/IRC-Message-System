@@ -154,7 +154,15 @@ int main(int argc, char **argv){
 
 						printf("Socket closed...\n");
 						close(i);//connection,socket closed						    		
-						FD_CLR(i, &master);//it is removed from master set                    
+						FD_CLR(i, &master);//it is removed from master set  
+						int z;
+						for(z=0;z<sessionsCurrentIndex;z++)
+						{
+							if(FD_ISSET(z,&sessions[z]))
+							{
+								FD_CLR(i,&sessions[z]);
+							}
+						}                  
 					}
 					else{	//if data is received from a client
 						printf("%s\n", "NORMAL_MESSAGE-2");
