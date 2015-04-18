@@ -48,7 +48,6 @@ int main(int argc, char **argv){
 	char send_buf[BUFSIZE];
 	char buf[BUFSIZE];
 	int sockfd, fdmax, i;
-
 	struct sockaddr_in server_addr;
 
 	fd_set master;
@@ -149,7 +148,7 @@ int main(int argc, char **argv){
                     		{
                     			printf("%d\n", packet.SystemCode);
                     			  printf(" %d%s%s\n",packet.senderfd," says: ",packet.message);
-                    			  
+
 
                     			break;
                     		}
