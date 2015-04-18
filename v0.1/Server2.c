@@ -41,6 +41,7 @@ int authSize;
 fd_set* sessions;
 int sessionsSize;
 int sessionsCurrentIndex;
+	int fdmax; //biggest file descriptor number	 
 int main(int argc, char **argv){
 	if(argc<=1){
 		printf("Please give port number to listen\n");exit(1);
@@ -56,7 +57,7 @@ int main(int argc, char **argv){
 	struct sockaddr_in serveraddr;//server address
 	struct sockaddr_in clientaddr;//client address
 	   
-	int fdmax; //biggest file descriptor number	    
+   
 	int listener;//socket descriptor which listens client
 	int newfd; //new socket which is accepted
 	    
@@ -459,7 +460,7 @@ bool handleNormalMessage(int i,struct compacket compacMost)
 	}
 	
 	compacMost.senderfd = i;
-	for(j=0;j<=sessionsCurrentIndex;j++)
+	for(j=0;j<=fdmax;j++)
 	{
 		if(FD_ISSET(j,&sessions[whichsession]))
 		{
