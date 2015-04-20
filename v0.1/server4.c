@@ -33,6 +33,7 @@ bool initalizeSessions();
 void* doSomeThing(void *arg);
 bool addSession(fd_set fdSet);
 bool handleNormalMessage(int i, struct compacket compacMost);
+bool addUser(char* message);
 int* authStatus;
 int authSize;
 fd_set* sessions;
@@ -202,15 +203,13 @@ int main(int argc, char **argv){
 															 {
 															 	if(FD_ISSET(k,&sessions[convertedValue]))
 															 	{
-															 		printf("%s\n", "Digeradsdas " );
 															 		struct compacket sessionJoinPacket;
 															 		sessionJoinPacket.SystemCode = SESSION_JOIN_INFORMATION;
 															 		sprintf(sessionJoinPacket.message,"%d join at %s",convertedValue,getTimeStamp());
 															 	
 															 		
 															 		send(k,&sessionJoinPacket,sizeof(sessionJoinPacket),0);
-															 		printf("%s\n", "Digeradsdas6 " );
-															 		printf("%s\n", "Diger session uyelerine uyari gonderildi." );
+															 		
 															 	}
 															 }
 															 FD_SET(i, &sessions[convertedValue]);
@@ -233,14 +232,31 @@ int main(int argc, char **argv){
 								packet.SystemCode = SESION_LIST_SEND;
 								strcpy(packet.date,getTimeStamp());
 								sprintf(packet.message, "%d", sessionsCurrentIndex);
-								if (send(i, &packet, sizeof(packet), 0))//data is sent to server
-									printf(">err code is sended\n"); //if it is not listener, there is data from client
+								send(i, &packet, sizeof(packet), 0);//data is sent to server
+									// printf(">err code is sended\n"); //if it is not listener, there is data from client
 							}
 							else{
+								if(compacMost.SystemCode == USER_SIGNUP )
+								{
+
+									addUser(compacMost.message);
+									authStatus[i] = 1;
+									struct compacket sessionListPacket;
+								packet.SystemCode = SESION_LIST_SEND;
+								strcpy(packet.date,getTimeStamp());
+								sprintf(packet.message, "%d", sessionsCurrentIndex);
+								send(i, &packet, sizeof(packet), 0);//data is sent to server
+									
+								}
+								else
+								{
+
+
 								struct compacket packet;
 								packet.SystemCode = WRONG_CREDENTIAL;
-								if (send(i, &packet, sizeof(packet), 0))//data is sent to server
-									printf(">err code is sended\n"); //if it is not listener, there is data from client	
+								send(i, &packet, sizeof(packet), 0);//data is sent to server
+									// printf(">err code is sended\n"); //if it is not listener, there is data from client	
+								}
 							}
 						}
 					}
@@ -290,7 +306,7 @@ int isValidUser(char* uname_pass)
 	  while ((read = getline(&temp, &len, fp)) != -1) {
 	  	temp[read-1] = '\0';
 	  	// printf("%s\n","Satir satir bakiyorum" );
-	  	printf("%s ve %s\n",temp, uname_pass );
+	  	// printf("%s ve %s\n",temp, uname_pass );
           if ((strcmp(temp, uname_pass)) == 0) {
 			// printf("%s\n","Return 1 " );
 			return 1;
@@ -300,7 +316,7 @@ int isValidUser(char* uname_pass)
 	if (fp) {
 		fclose(fp);
 	}
-	printf("%s\n","Return -1 " );
+	// printf("%s\n","Return -1 " );
 	return -1;
 }
 char* getTimeStamp()
@@ -411,10 +427,29 @@ void* doSomeThing(void *arg)
 				{
 					fd_set tempset;
 					addSession(tempset);
-					printf("%s\n","Set ekledim." );
+					printf("%s\n","New session was added." );
 				}
 	    }
     }
    }
     return NULL;
+}
+bool addUser(char* message)
+{
+	char *fname = "users.txt";   // dosya adi
+	FILE *fp;
+	size_t len = 0;
+	char * temp = NULL;
+
+	if ((fp = fopen(fname, "a")) == NULL) {
+		// printf("%s\n","Return -1 " );
+		return(-1);
+	}
+	fputs("\n",fp);
+	 fputs(message,fp);
+	 
+	if (fp) {
+		fclose(fp);
+	}
+	return -1;
 }

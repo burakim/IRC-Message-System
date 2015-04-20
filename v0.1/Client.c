@@ -77,7 +77,7 @@ int main(int argc, char **argv){
 	FD_SET(sockfd,&master);//sockfd is added to master file
 
 	fdmax=sockfd;
-
+int isAccessGranted = 0;
 	while(1){
 		read_fds=master;
 		if(select(fdmax+1,&read_fds,NULL,NULL,NULL)==-1){//track ready sockets to read,write, supports multiplexing, read_fds is updated
@@ -87,6 +87,8 @@ int main(int argc, char **argv){
 		for(i=0;i<=fdmax;i++)
 			if(FD_ISSET(i,&read_fds)){
 				if(i==0){//ready for write
+					if(isAccessGranted == 1)
+					{
 							struct compacket compac;			
 
 					int return1 =fgets(compac.message,BUFSIZE,stdin);
@@ -103,7 +105,7 @@ int main(int argc, char **argv){
 						 printf(">message is sended\n");
 
 						
-					
+					}
 						
 				}
 				int nbytes=0;
@@ -111,7 +113,7 @@ int main(int argc, char **argv){
 				 if((nbytes=recv(i,&packet,sizeof(packet),0))>0){//from i. connection,socket	
 
                     packet.message[nbytes]='\0';
-                    printf("%s%d\n","Received packet error code = ",packet.SystemCode);
+                    // printf("%s%d\n","Received packet error code = ",packet.SystemCode);
                     
                     	switch (packet.SystemCode)
                     	{
@@ -142,13 +144,48 @@ int main(int argc, char **argv){
                     			
                     			compac.SystemCode = NORMAL_MESSAGE;
 
-                    			if(send(sockfd,&compac,sizeof(compac),0))//data is sent to server
-									 printf(">user creditendals sended\n");
+                    			send(sockfd,&compac,sizeof(compac),0);//data is sent to server
+									 // printf(">user creditendals sended\n");
 									break;
                     		}
                     		case WRONG_CREDENTIAL:
                     		{
                     			printf("%s\n", "Wrong username and password entered");
+                    			printf("%s\n","Would you signup into multi-chat system (Y/N)" );
+                    			char result;
+                    			scanf("%c",&result);
+                    			while(10 == result)
+                    			{
+                    				scanf("%c",&result);
+                    			}
+                    			// printf("%s\n","dasdas" );
+                    			// printf("%d\n",result );
+                    			switch (result)
+                    			{
+                    				case 'Y':
+                    				case 'y' :
+                    				{
+                    					char uname[128];
+                    					char upass[128];
+
+                    					struct compacket packet;
+                    					packet.SystemCode = USER_SIGNUP;
+                    					printf("%s\n","Please enter username and password by putting single space between them." );
+                    					scanf("%s%s",uname,upass);
+                    					sprintf((packet.message),"%s %s",uname,upass);
+                    					send(sockfd,&packet,sizeof(packet),0);//data is sent to server
+									 
+                    					break;
+                    				}
+                    				case 'N':
+                    				case 'n' :
+                    				{
+                    					break;
+                    				}
+                    				default:{
+                    					break;
+                    				}
+                    			}
                     		break;
                     		}
                     		case NORMAL_MESSAGE:
@@ -162,6 +199,7 @@ int main(int argc, char **argv){
                     		case SESION_LIST_SEND:
                     		{
                     			printf("%s%s\n","You authenticated at ",packet.date );
+                    			isAccessGranted = 1;
                     			int j;
                     			int maxSession = atoi(packet.message);
                     			printf("%s\n","Session List:" );
