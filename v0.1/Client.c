@@ -41,6 +41,7 @@ struct compacket
 	char message[1024];
 	int isConsumed;
 	int SystemCode;
+	char date[10];
 
 };
 int main(int argc, char **argv){
@@ -114,6 +115,12 @@ int main(int argc, char **argv){
                     
                     	switch (packet.SystemCode)
                     	{
+                    		case SESSION_JOIN_INFORMATION:
+                    		{
+                    			// this parts only informs to users about new connection occurs in session.
+                    			printf("%s\n", packet.message);
+                    			break;
+                    		}
                     		case LOGIN_REQUEST:
                     		{
                     			struct compacket compac;
@@ -146,15 +153,15 @@ int main(int argc, char **argv){
                     		}
                     		case NORMAL_MESSAGE:
                     		{
-                    			printf("%d\n", packet.SystemCode);
-                    			  printf(" %d%s%s\n",packet.senderfd," says: ",packet.message);
+                    			// printf("%d\n", packet.SystemCode);
+                    			  printf(" %d%s%s:%s \n",packet.senderfd," send at \t",packet.date,packet.message);
 
 
                     			break;
                     		}
                     		case SESION_LIST_SEND:
                     		{
-                    			printf("%s\n","Authetication succesfull. Please join one of sessions that listed under this line by entering session number" );
+                    			printf("%s%s\n","You authenticated at ",packet.date );
                     			int j;
                     			int maxSession = atoi(packet.message);
                     			printf("%s\n","Session List:" );
